@@ -301,3 +301,33 @@ If this project has helped your research, learning, or security operations, cons
 <b>Built for evidence-based financial file analysis.</b><br>
 <i>Analyze the evidence. Verify the data. Never assume the transaction.</i>
 </p>
+
+---
+
+## Core Engine v0.1.0
+
+Initial Python engine foundation:
+
+- JSON file inspection
+- CSV inspection
+- XML parsing
+- Basic SWIFT FIN structural inspection
+- SHA-256 evidence fingerprint
+- JSON analysis report
+- Command-line interface
+- Unit tests
+- GitHub Actions test workflow
+
+Run the analyzer:
+
+\`\`\`bash
+python -m bank_h2h_forensics samples/sample-transactions.json
+\`\`\`
+
+Generate a JSON report:
+
+\`\`\`bash
+python -m bank_h2h_forensics samples/sample-transactions.json --output reports/sample-report.json
+\`\`\`
+
+This initial engine is an analysis prototype. It does not authenticate bank messages or confirm transactions, settlement, or funds availability.

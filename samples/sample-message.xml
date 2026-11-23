@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document>
+    <Sample>
+        <Reference>SAMPLE-XML-001</Reference>
+        <Currency>USD</Currency>
+        <Amount>500.00</Amount>
+    </Sample>
+</Document>

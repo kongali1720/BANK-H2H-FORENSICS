@@ -1,0 +1,17 @@
+{
+  "dataset": "SYNTHETIC_TEST_DATA",
+  "transactions": [
+    {
+      "reference": "SAMPLE-001",
+      "currency": "USD",
+      "amount": "1250.00",
+      "status": "SAMPLE_ONLY"
+    },
+    {
+      "reference": "SAMPLE-002",
+      "currency": "EUR",
+      "amount": "850.00",
+      "status": "SAMPLE_ONLY"
+    }
+  ]
+}
