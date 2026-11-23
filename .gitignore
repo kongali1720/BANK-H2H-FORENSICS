@@ -1,0 +1,68 @@
+# Evidence and financial data - DO NOT COMMIT
+evidence/original/*
+evidence/processed/*
+evidence/reports/*
+output/*
+
+# Allow directory placeholders
+!evidence/original/.gitkeep
+!evidence/processed/.gitkeep
+!evidence/reports/.gitkeep
+!output/.gitkeep
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+secrets/
+credentials/
+token*
+password*
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDEs and editors
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Build and distribution
+build/
+dist/
+*.egg-info/
