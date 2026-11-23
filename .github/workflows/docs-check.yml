@@ -1,0 +1,62 @@
+name: Repository Documentation Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  documentation-check:
+    name: Validate Documentation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify required files
+        shell: bash
+        run: |
+          set -e
+          files=(
+            README.md
+            LICENSE
+            SECURITY.md
+            CONTRIBUTING.md
+            CODE_OF_CONDUCT.md
+            NOTICE
+            .gitignore
+            docs/architecture.md
+            docs/evidence-methodology.md
+            docs/supported-formats.md
+            docs/security.md
+          )
+          for file in "${files[@]}"; do
+            if [ ! -s "$file" ]; then
+              echo "ERROR: Missing or empty file: $file"
+              exit 1
+            fi
+            echo "OK: $file"
+          done
+
+      - name: Verify Mermaid blocks are closed
+        shell: bash
+        run: |
+          set -e
+          for file in README.md docs/*.md; do
+            [ -f "$file" ] || continue
+            count=$(grep -c '```' "$file" || true)
+            if [ $((count % 2)) -ne 0 ]; then
+              echo "ERROR: Unbalanced code fences in $file"
+              exit 1
+            fi
+            echo "OK: Code fences $file"
+          done
+
+      - name: Documentation check passed
+        run: echo "All required documentation files exist and code fences are balanced."

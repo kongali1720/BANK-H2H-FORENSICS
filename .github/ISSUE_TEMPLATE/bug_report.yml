@@ -1,0 +1,50 @@
+name: Bug Report
+description: Report a reproducible software defect.
+title: "[BUG] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a problem.
+        Do not upload real banking records, credentials, personal data, or confidential evidence.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Bug summary
+      description: Describe the problem clearly.
+      placeholder: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, software version, and relevant configuration.
+  - type: textarea
+    id: sanitized_logs
+    attributes:
+      label: Sanitized logs
+      description: Remove secrets, account numbers, personal data, and financial information before posting.
