@@ -66,3 +66,5 @@ tmp/
 build/
 dist/
 *.egg-info/
+# Local forensic validation reports
+validation_reports/

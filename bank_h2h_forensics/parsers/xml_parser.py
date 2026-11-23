@@ -2,12 +2,17 @@
 
 from xml.etree import ElementTree as ET
 
+from ..validation import InputValidationError
+
 
 def parse_xml(path):
-    parser = ET.XMLParser()
-
-    with open(path, "rb") as file:
-        root = ET.fromstring(file.read(), parser=parser)
+    try:
+        with open(path, "rb") as file:
+            root = ET.fromstring(file.read())
+    except ET.ParseError as exc:
+        raise InputValidationError(f"Invalid XML: {exc}") from exc
+    except OSError as exc:
+        raise InputValidationError(f"Unable to read XML file: {exc}") from exc
 
     def local_name(tag):
         return tag.split("}", 1)[-1] if "}" in tag else tag
