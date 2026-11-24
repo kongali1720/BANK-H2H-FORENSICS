@@ -1,0 +1,240 @@
+===== PARSER FILES =====
+bank_h2h_forensics/parsers/csv_parser.py
+bank_h2h_forensics/parsers/json_parser.py
+bank_h2h_forensics/parsers/swift_parser.py
+bank_h2h_forensics/parsers/xml_parser.py
+bank_h2h_forensics/parsers/__init__.py
+bank_h2h_forensics/parsers/__pycache__/csv_parser.cpython-314.pyc
+bank_h2h_forensics/parsers/__pycache__/json_parser.cpython-314.pyc
+bank_h2h_forensics/parsers/__pycache__/swift_parser.cpython-314.pyc
+bank_h2h_forensics/parsers/__pycache__/xml_parser.cpython-314.pyc
+bank_h2h_forensics/parsers/__pycache__/__init__.cpython-314.pyc
+
+===== PARSER SOURCE =====
+### bank_h2h_forensics/parsers/__init__.py
+"""Format-specific parsers."""
+### bank_h2h_forensics/parsers/csv_parser.py
+"""CSV inspection parser."""
+
+import csv
+
+
+def parse_csv(path):
+    with open(path, "r", encoding="utf-8-sig", newline="") as file:
+        reader = csv.DictReader(file)
+        rows = list(reader)
+
+    return {
+        "format": "CSV",
+        "valid": True,
+        "columns": reader.fieldnames or [],
+        "row_count": len(rows),
+        "data": rows,
+    }
+### bank_h2h_forensics/parsers/json_parser.py
+"""JSON inspection parser."""
+
+import json
+
+
+def parse_json(path):
+    with open(path, "r", encoding="utf-8-sig") as file:
+        data = json.load(file)
+
+    return {
+        "format": "JSON",
+        "valid": True,
+        "root_type": type(data).__name__,
+        "data": data,
+    }
+### bank_h2h_forensics/parsers/swift_parser.py
+"""Basic SWIFT FIN structural inspection."""
+
+import re
+
+
+FIN_TAG_PATTERN = re.compile(r"(?m)^:(\d{2}[A-Z]?):")
+
+
+def parse_swift(path):
+    with open(path, "r", encoding="utf-8-sig", errors="replace") as file:
+        content = file.read()
+
+    tags = FIN_TAG_PATTERN.findall(content)
+
+    message_types = re.findall(r"\{2:[A-Z0-9]{4}", content)
+
+    normalized_types = [
+        match.replace("{2:", "")
+        for match in message_types
+    ]
+
+    return {
+        "format": "SWIFT_FIN_TEXT",
+        "valid": bool(content.strip()),
+        "character_count": len(content),
+        "tag_count": len(tags),
+        "tags": tags,
+        "message_type_candidates": normalized_types,
+        "warning": (
+            "Structural text inspection only. "
+            "This does not authenticate a SWIFT message or confirm a transaction."
+        ),
+    }
+### bank_h2h_forensics/parsers/xml_parser.py
+"""XML inspection parser with external entity processing disabled."""
+
+from xml.etree import ElementTree as ET
+
+
+def parse_xml(path):
+    parser = ET.XMLParser()
+
+    with open(path, "rb") as file:
+        root = ET.fromstring(file.read(), parser=parser)
+
+    def local_name(tag):
+        return tag.split("}", 1)[-1] if "}" in tag else tag
+
+    elements = []
+
+    for element in root.iter():
+        text = (element.text or "").strip()
+
+        if text:
+            elements.append({
+                "tag": local_name(element.tag),
+                "text": text,
+            })
+
+    return {
+        "format": "XML",
+        "valid": True,
+        "root": local_name(root.tag),
+        "element_count": sum(1 for _ in root.iter()),
+        "text_elements": elements,
+    }
+
+===== ANALYZER =====
+"""Main financial file analysis engine."""
+
+from pathlib import Path
+from datetime import datetime, timezone
+
+from .detector import detect_format
+from .hashing import sha256_file
+from .parsers.json_parser import parse_json
+from .parsers.csv_parser import parse_csv
+from .parsers.xml_parser import parse_xml
+from .parsers.swift_parser import parse_swift
+
+MAX_FILE_SIZE = 25 * 1024 * 1024
+
+
+def analyze_file(path):
+    source = Path(path)
+
+    if not source.exists():
+        raise FileNotFoundError(f"File not found: {source}")
+
+    if not source.is_file():
+        raise ValueError("Input must be a regular file.")
+
+    size = source.stat().st_size
+
+    if size > MAX_FILE_SIZE:
+        raise ValueError("File exceeds the 25 MB analysis limit.")
+
+    detected = detect_format(source)
+    parsed = None
+    warnings = []
+
+    if detected == "JSON":
+        parsed = parse_json(source)
+    elif detected == "CSV":
+        parsed = parse_csv(source)
+    elif detected == "XML":
+        parsed = parse_xml(source)
+    elif detected == "SWIFT_OR_TEXT":
+        parsed = parse_swift(source)
+        warnings.append(
+            "SWIFT detection is heuristic and does not authenticate a message."
+        )
+    else:
+        warnings.append(
+            "Unsupported format. Metadata and SHA-256 only."
+        )
+
+    report = {
+        "tool": "BANK-H2H-FORENSICS",
+        "version": "0.1.0",
+        "analysis_timestamp_utc": datetime.now(timezone.utc).isoformat(),
+        "source": {
+            "filename": source.name,
+            "size_bytes": size,
+            "detected_format": detected,
+            "sha256": sha256_file(source),
+        },
+        "analysis": {
+            "status": "COMPLETED",
+            "parser_result": parsed,
+            "warnings": warnings,
+        },
+        "limitations": [
+            "File analysis does not authenticate the source institution.",
+            "A file hash does not prove the truth of file contents.",
+            "Parsing does not prove payment execution or settlement.",
+            "Funds availability must be independently confirmed.",
+        ],
+    }
+
+    return report
+
+===== CLI =====
+"""Command-line interface."""
+
+import argparse
+import json
+import sys
+
+from .analyzer import analyze_file
+from .reporter import write_json_report
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        prog="bank-h2h-forensics",
+        description="Financial file inspection and evidence analysis toolkit",
+    )
+
+    parser.add_argument(
+        "file",
+        help="Path to a JSON, CSV, XML, or SWIFT-like text file",
+    )
+
+    parser.add_argument(
+        "--output",
+        "-o",
+        help="Optional JSON report output path",
+    )
+
+    args = parser.parse_args()
+
+    try:
+        report = analyze_file(args.file)
+
+        if args.output:
+            destination = write_json_report(report, args.output)
+            print(f"[+] Report saved: {destination}")
+
+        print(json.dumps(report, indent=2, ensure_ascii=False))
+
+    except Exception as exc:
+        print(f"[ERROR] {exc}", file=sys.stderr)
+        return 1
+
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

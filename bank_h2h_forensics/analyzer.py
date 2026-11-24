@@ -4,7 +4,7 @@ from pathlib import Path
 from datetime import datetime, timezone
 
 from .detector import detect_format
-from .hashing import sha256_file
+from .evidence import create_evidence_metadata
 from .parsers.json_parser import parse_json
 from .parsers.csv_parser import parse_csv
 from .parsers.xml_parser import parse_xml
@@ -13,7 +13,7 @@ from .parsers.swift_parser import parse_swift
 MAX_FILE_SIZE = 25 * 1024 * 1024
 
 
-def analyze_file(path):
+def analyze_file(path, case_id=None):
     source = Path(path)
 
     if not source.exists():
@@ -27,6 +27,7 @@ def analyze_file(path):
     if size > MAX_FILE_SIZE:
         raise ValueError("File exceeds the 25 MB analysis limit.")
 
+    forensic_metadata = create_evidence_metadata(source, case_id=case_id)
     detected = detect_format(source)
     parsed = None
     warnings = []
@@ -49,13 +50,14 @@ def analyze_file(path):
 
     report = {
         "tool": "BANK-H2H-FORENSICS",
-        "version": "0.1.0",
+        "version": "0.3.0",
         "analysis_timestamp_utc": datetime.now(timezone.utc).isoformat(),
+        "forensic_metadata": forensic_metadata,
         "source": {
             "filename": source.name,
             "size_bytes": size,
             "detected_format": detected,
-            "sha256": sha256_file(source),
+            "sha256": forensic_metadata["evidence"]["sha256"],
         },
         "analysis": {
             "status": "COMPLETED",

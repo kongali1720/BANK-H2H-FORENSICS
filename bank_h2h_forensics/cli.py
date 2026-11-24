@@ -25,10 +25,15 @@ def main():
         help="Optional JSON report output path",
     )
 
+    parser.add_argument(
+        "--case-id",
+        help="Optional case identifier for forensic reporting",
+    )
+
     args = parser.parse_args()
 
     try:
-        report = analyze_file(args.file)
+        report = analyze_file(args.file, case_id=args.case_id)
 
         if args.output:
             destination = write_json_report(report, args.output)
