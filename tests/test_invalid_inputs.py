@@ -51,3 +51,29 @@ def test_csv_duplicate_header_rejected(tmp_path):
 
     with pytest.raises(InputValidationError, match="duplicate"):
         parse_csv(path)
+
+
+def test_file_over_25mb_rejected(tmp_path):
+    from bank_h2h_forensics.analyzer import MAX_FILE_SIZE
+
+    path = tmp_path / "oversized.unknown"
+    with path.open("wb") as file:
+        file.truncate(MAX_FILE_SIZE + 1)
+
+    with pytest.raises(ValueError, match="25 MB analysis limit"):
+        analyze_file(path)
+
+
+def test_file_exactly_25mb_accepted(tmp_path):
+    from bank_h2h_forensics.analyzer import MAX_FILE_SIZE
+
+    path = tmp_path / "limit.unknown"
+    with path.open("wb") as file:
+        file.truncate(MAX_FILE_SIZE)
+
+    report = analyze_file(path)
+
+    assert report["source"]["size_bytes"] == MAX_FILE_SIZE
+    assert report["source"]["detected_format"] == "UNKNOWN"
+    assert report["source"]["sha256"]
+    assert report["analysis"]["status"] == "COMPLETED"
