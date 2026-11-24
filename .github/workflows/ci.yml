@@ -37,7 +37,13 @@ jobs:
         run: |
           python -m pip install -e .
           python -m pip install pytest ruff build pip-audit
-          python -m pip install --upgrade setuptools filelock
+          python -m pip install --upgrade setuptools
+          python -m pip install --upgrade "filelock>=4.2.1"
+
+      - name: Verify security dependency versions
+        run: |
+          python -m pip show filelock setuptools
+          python -c "from filelock import __version__; print('filelock version:', __version__); assert tuple(map(int, __version__.split('.'))) >= (4, 2, 1), 'filelock must be >= 4.2.1'"
 
       - name: Ruff lint
         run: ruff check bank_h2h_forensics tests
