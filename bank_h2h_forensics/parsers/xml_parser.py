@@ -23,10 +23,12 @@ def parse_xml(path):
         text = (element.text or "").strip()
 
         if text:
-            elements.append({
-                "tag": local_name(element.tag),
-                "text": text,
-            })
+            elements.append(
+                {
+                    "tag": local_name(element.tag),
+                    "text": text,
+                }
+            )
 
     return {
         "format": "XML",

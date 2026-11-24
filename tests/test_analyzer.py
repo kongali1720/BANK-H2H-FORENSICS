@@ -12,22 +12,13 @@ class AnalyzerTests(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "sample.json"
-            path.write_text(
-                json.dumps(payload),
-                encoding="utf-8"
-            )
+            path.write_text(json.dumps(payload), encoding="utf-8")
 
             report = analyze_file(path)
 
-            self.assertEqual(
-                report["source"]["detected_format"], "JSON"
-            )
-            self.assertEqual(
-                report["analysis"]["status"], "COMPLETED"
-            )
-            self.assertEqual(
-                report["analysis"]["parser_result"]["data"], payload
-            )
+            self.assertEqual(report["source"]["detected_format"], "JSON")
+            self.assertEqual(report["analysis"]["status"], "COMPLETED")
+            self.assertEqual(report["analysis"]["parser_result"]["data"], payload)
 
     def test_unknown_file_still_hashes(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -36,9 +27,7 @@ class AnalyzerTests(unittest.TestCase):
 
             report = analyze_file(path)
 
-            self.assertEqual(
-                report["source"]["detected_format"], "UNKNOWN"
-            )
+            self.assertEqual(report["source"]["detected_format"], "UNKNOWN")
             self.assertTrue(report["source"]["sha256"])
             self.assertTrue(report["analysis"]["warnings"])
 

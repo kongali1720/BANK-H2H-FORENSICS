@@ -7,7 +7,7 @@ from ..validation import InputValidationError
 
 def parse_json(path):
     try:
-        with open(path, "r", encoding="utf-8-sig") as file:
+        with open(path, encoding="utf-8-sig") as file:
             data = json.load(file)
     except json.JSONDecodeError as exc:
         raise InputValidationError(

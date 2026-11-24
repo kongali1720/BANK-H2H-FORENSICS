@@ -45,9 +45,7 @@ class EvidenceTests(unittest.TestCase):
 
             metadata = create_evidence_metadata(path)
 
-            timestamp = datetime.fromisoformat(
-                metadata["created_at_utc"]
-            )
+            timestamp = datetime.fromisoformat(metadata["created_at_utc"])
 
             self.assertIsNotNone(timestamp.tzinfo)
             self.assertEqual(timestamp.utcoffset().total_seconds(), 0)
@@ -75,8 +73,6 @@ class EvidenceTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 create_evidence_metadata(path)
 
-
-
     def test_metadata_and_custody_share_timestamp(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "sample.txt"
@@ -89,6 +85,7 @@ class EvidenceTests(unittest.TestCase):
                 metadata["created_at_utc"],
                 event["timestamp_utc"],
             )
+
 
 if __name__ == "__main__":
     unittest.main()

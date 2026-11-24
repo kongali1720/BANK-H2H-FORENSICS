@@ -4,7 +4,6 @@ from pathlib import Path
 
 
 def detect_format(path):
-    filename = Path(path).name.lower()
     suffix = Path(path).suffix.lower()
 
     if suffix == ".json":
