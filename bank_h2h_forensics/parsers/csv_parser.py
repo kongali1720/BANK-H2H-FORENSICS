@@ -7,7 +7,7 @@ from ..validation import InputValidationError
 
 def parse_csv(path):
     try:
-        with open(path, "r", encoding="utf-8-sig", newline="") as file:
+        with open(path, encoding="utf-8-sig", newline="") as file:
             reader = csv.DictReader(file)
             headers = reader.fieldnames
 

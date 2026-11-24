@@ -1,14 +1,14 @@
 """Main financial file analysis engine."""
 
-from pathlib import Path
 from datetime import datetime, timezone
+from pathlib import Path
 
 from .detector import detect_format
 from .evidence import create_evidence_metadata
-from .parsers.json_parser import parse_json
 from .parsers.csv_parser import parse_csv
-from .parsers.xml_parser import parse_xml
+from .parsers.json_parser import parse_json
 from .parsers.swift_parser import parse_swift
+from .parsers.xml_parser import parse_xml
 
 MAX_FILE_SIZE = 25 * 1024 * 1024
 
@@ -40,13 +40,9 @@ def analyze_file(path, case_id=None):
         parsed = parse_xml(source)
     elif detected == "SWIFT_OR_TEXT":
         parsed = parse_swift(source)
-        warnings.append(
-            "SWIFT detection is heuristic and does not authenticate a message."
-        )
+        warnings.append("SWIFT detection is heuristic and does not authenticate a message.")
     else:
-        warnings.append(
-            "Unsupported format. Metadata and SHA-256 only."
-        )
+        warnings.append("Unsupported format. Metadata and SHA-256 only.")
 
     report = {
         "tool": "BANK-H2H-FORENSICS",
